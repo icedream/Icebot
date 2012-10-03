@@ -55,18 +55,18 @@ namespace Icebot
             }
 
             // Split the message up
-            RfcMessage msg = null;
+            IrcResponse msg = null;
             ushort replyCode = 0;
             if (ushort.TryParse(match.Groups["reply"].Value, out replyCode))
             {
                 msg = new RfcReply();
-                ((RfcReply)(msg = new RfcReply())).Code = (RfcReplyCode)replyCode;
+                ((RfcReply)(msg = new RfcReply())).Code = (IrcReplyCode)replyCode;
             }
             else
             {
                 ((RfcCommand)(msg = new RfcCommand())).Command = match.Groups["reply"].Value;
             }
-            msg.IrcSource = match.Groups["source"].Value;
+            msg.Source = match.Groups["source"].Value;
         }
 
         private void _asyncReadingProcedure()

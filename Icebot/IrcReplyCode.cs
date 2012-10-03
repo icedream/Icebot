@@ -6,8 +6,10 @@ namespace Icebot
     /// Reply codes as defined in RFC 2812
     /// </summary>
     // Source: http://www.mirc.com/rfc2812.html
-    public enum RfcReplyCode : ushort
+    public enum IrcReplyCode : ushort
     {
+        NonNumeric = 000,
+
         // reply codes
         RPL_WELCOME = 001,
         RPL_YOURHOST = 002,
