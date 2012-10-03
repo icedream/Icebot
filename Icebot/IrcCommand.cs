@@ -16,10 +16,10 @@ namespace Icebot
             this.Parameters = new string[0];
 		}
 
-        public IrcCommand(string command, params string[] parameters)
+        public IrcCommand(string command)
         {
             this.Command = command;
-            this.Parameters = parameters;
+            this.Parameters = new string[0];
         }
 
 		public IrcCommand(string command, params string[] parameters)
