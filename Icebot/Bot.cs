@@ -23,7 +23,7 @@ using log4net;
 
 namespace Icebot
 {
-    public class Bot
+    public partial class Bot
     {
         // Private members
 
@@ -63,6 +63,8 @@ namespace Icebot
         private ushort _queueIntervalAfterMessages = 3; // TODO: Find a better name for this.
         public ushort QueueIntervalAfterMessages { get { return _queueInterval; } set { _queueIntervalAfterMessages = value; } }
 
+        public string ServerHost { get; set; }
+        public ushort ServerPort { get; set; }
 
         // Constructors
 
@@ -179,6 +181,11 @@ namespace Icebot
         public void SendCommand(string command)
         {
             SendCommand(new IrcCommand(command));
+        }
+
+        public void SendCommand(string command, params string[] parameters)
+        {
+            SendCommand(new IrcCommand(command, parameters));
         }
 
         public void SendCommand(IrcCommand command)
