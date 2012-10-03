@@ -32,6 +32,7 @@ namespace Icebot
 
         Stack<string>[] _messageQueue = new Stack<string>[3];
 
+        Socket _socket;
         Stream _stream;
         StreamReader _reader;
         StreamWriter _writer;
@@ -63,18 +64,50 @@ namespace Icebot
         private ushort _queueIntervalAfterMessages = 3; // TODO: Find a better name for this.
         public ushort QueueIntervalAfterMessages { get { return _queueInterval; } set { _queueIntervalAfterMessages = value; } }
 
-        public string ServerHost { get; set; }
-        public ushort ServerPort { get; set; }
+        public IPEndPoint Server { get; set; }
+
+        private bool _autoPingReply = true;
+        public bool AutoPingReply { get { return _autoPingReply; } set { _autoPingReply = value; } }
 
         // Constructors
 
-        public Bot()
+        public Bot(IPEndPoint server)
         {
             _scheduler = TaskScheduler.FromCurrentSynchronizationContext();
             _taskfactory = new TaskFactory(_scheduler);
 
+            // Fill with empty stacks for the message queueing (actually "stacking")
             for (int i = 0; i < _messageQueue.Length; i++)
                 _messageQueue[i] = new Stack<string>();
+
+            this.Server = server;
+        }
+
+        public void Start(string nick = "IRCBot", string ident = "bot", string realname = "IRC Bot", string password = null, bool invisible = false, bool receiveWallops = false)
+        {
+            Connect();
+
+            // Send password
+            if(!string.IsNullOrEmpty(password))
+                Pass(password);
+
+            User(ident, receiveWallops, invisible, realname);
+            Nick(nick);
+
+            _taskfactory.StartNew(() => _asyncReadingProcedure());
+            _taskfactory.StartNew(() => _asyncWritingProcedure());
+        }
+
+        internal void Connect()
+        {
+            // TODO: Implement SSL support
+            // TODO: Implement error handling for connection errors
+            _socket = new Socket(Server.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _socket.Connect(Server);
+            _stream = new NetworkStream(_socket, true);
+            // TODO: Implement BufferSize property
+            _reader = new StreamReader(_stream, Encoding.UTF8, false, 2048);
+            _writer = new StreamWriter(_stream, Encoding.UTF8, 2048);
         }
 
 
