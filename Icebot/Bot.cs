@@ -25,12 +25,8 @@ namespace Icebot
 {
     public partial class Bot
     {
-        // Private members
-
         TaskScheduler _scheduler;
         TaskFactory _taskfactory;
-
-        Stack<string>[] _messageQueue = new Stack<string>[3];
 
         Socket _socket;
         Stream _stream;
@@ -39,37 +35,43 @@ namespace Icebot
 
         ILog _log;
 
-
-        // Event locks
-
-        ManualResetEventSlim _asyncReadingLock = new ManualResetEventSlim(true);
-        ManualResetEventSlim _asyncWritingLock = new ManualResetEventSlim(true);
-        ManualResetEventSlim _asyncQueueLock = new ManualResetEventSlim(false);
-
-
-
-        // Events
-
         public event EventHandler<IrcResponseEventArgs> ResponseReceived;
+        protected void OnResponseReceived(IrcResponse resp)
+        {
+            IrcResponseEventArgs e = new IrcResponseEventArgs(resp);
+            if (ResponseReceived != null)
+                ResponseReceived.Invoke(this, e);
+        }
         public event EventHandler<IrcResponseEventArgs> NumericReplyReceived;
+        protected void OnNumericReplyReceived(IrcResponse resp)
+        {
+            IrcResponseEventArgs e = new IrcResponseEventArgs(resp);
+            if (NumericReplyReceived != null)
+                NumericReplyReceived.Invoke(this, e);
+        }
         public event EventHandler<IrcResponseEventArgs> StandardReplyReceived;
+        protected void OnStandardReplyReceived(IrcResponse resp)
+        {
+            IrcResponseEventArgs e = new IrcResponseEventArgs(resp);
+            if (StandardReplyReceived != null)
+                StandardReplyReceived.Invoke(this, e);
+        }
         public event EventHandler<RawLineEventArgs> RawLineReceived;
-        public event EventHandler<RawLineEventArgs> RawLineQueued;
+        protected void OnRawLineReceived(string line)
+        {
+            RawLineEventArgs e = new RawLineEventArgs(line);
+            if (RawLineReceived != null)
+                RawLineReceived.Invoke(this, e);
+        }
         public event EventHandler<RawLineEventArgs> RawLineSent;
-
-
-        // Public properties
-        private ushort _queueInterval = 500;
-        public ushort QueueInterval { get { return _queueInterval; } set { _queueInterval = value; } }
-        private ushort _queueIntervalAfterMessages = 3; // TODO: Find a better name for this.
-        public ushort QueueIntervalAfterMessages { get { return _queueInterval; } set { _queueIntervalAfterMessages = value; } }
+        protected void OnRawLineSent(string line)
+        {
+            RawLineEventArgs e = new RawLineEventArgs(line);
+            if (RawLineSent != null)
+                RawLineSent.Invoke(this, e);
+        }
 
         public IPEndPoint Server { get; set; }
-
-        private bool _autoPingReply = true;
-        public bool AutoPingReply { get { return _autoPingReply; } set { _autoPingReply = value; } }
-
-        // Constructors
 
         public Bot(IPEndPoint server)
         {
@@ -91,11 +93,15 @@ namespace Icebot
             if(!string.IsNullOrEmpty(password))
                 Pass(password);
 
+            // Send user data
             User(ident, receiveWallops, invisible, realname);
+
+            // Send initial nick (or at least try getting that nick)
             Nick(nick);
 
-            _taskfactory.StartNew(() => _asyncReadingProcedure());
-            _taskfactory.StartNew(() => _asyncWritingProcedure());
+            // Asynchronous reading/writing startup
+            _taskfactory.StartNew(() => _asyncReadingProcedure(), _asyncCancel.Token);
+            _taskfactory.StartNew(() => _asyncWritingProcedure(), _asyncCancel.Token);
         }
 
         internal void Connect()
@@ -110,9 +116,18 @@ namespace Icebot
             _writer = new StreamWriter(_stream, Encoding.UTF8, 2048);
         }
 
+        internal void Disconnect()
+        {
+            _stream.Close();
+        }
 
-
-        // Private functions
+        public void Stop(string reason = "Quitting")
+        {
+            _asyncCancel.Cancel();
+            _writer.WriteLine("QUIT :" + reason);
+            while (!_reader.ReadLine().StartsWith("ERROR ", StringComparison.OrdinalIgnoreCase)) ;
+            Disconnect();
+        }
 
         private void _lineHandler(string line)
         {
@@ -132,79 +147,6 @@ namespace Icebot
                 NumericReplyReceived.Invoke(this, new IrcResponseEventArgs(response));
             else if (StandardReplyReceived != null)
                 StandardReplyReceived.Invoke(this, new IrcResponseEventArgs(response));
-        }
-
-        private void _asyncReadingProcedure()
-        {
-            _log.Debug("Asynchronous reading loop started (this is the asyncReadingProcedure thread)");
-
-            while (true)
-            {
-                try
-                {
-                    // Wait for the async event to be set
-                    _asyncReadingLock.Wait();
-
-                    lock (_asyncReadingLock)
-                    {
-                        // Read from stream
-                        string recv = _reader.ReadLine();
-                        _log.DebugFormat("RECV: {0}", recv);
-
-                        // Asynchronously handle the line
-                        _taskfactory.StartNew(() => _lineHandler(recv));
-                    }
-                }
-                catch (Exception eng)
-                {
-                    _log.Error("Error in reading thread", eng);
-                }
-            }
-        }
-
-        private void _asyncWritingProcedure()
-        {
-            _log.Debug("Asynchronous writing loop started (this is the asyncWritingProcedure thread)");
-
-            while (true)
-            {
-                try
-                {
-                    // Wait for the queue to be filled
-                    _asyncQueueLock.Wait(); // Needs less cpu then Thread.Sleep. Just a bit. At least that. ._.
-                    _asyncQueueLock.Reset();
-                    lock (_asyncQueueLock)
-                    {
-                        // Wait for the async event to be set
-                        _asyncWritingLock.Wait();
-
-                        ushort msg = 0;
-
-                        // This should emulate the anti-flood of the ZNC bouncer
-                        lock (_asyncWritingLock)
-                        {
-                            for (int i = _messageQueue.Length - 1; i > 0; i--)
-                                while (_messageQueue[i].Count > 0)
-                                {
-                                    string line = _messageQueue[i].Pop();
-                                    // TODO: Count timing of the event invocation and subtract it from total wait time
-                                    _writer.WriteLine(line);
-                                    _writer.Flush();
-                                    if (RawLineSent != null)
-                                        RawLineSent.Invoke(this, new RawLineEventArgs(line));
-                                    if(msg == QueueIntervalAfterMessages)
-                                        Thread.Sleep(this.QueueInterval);
-                                    else
-                                        msg++;
-                                }
-                        }
-                    }
-                }
-                catch (Exception eng)
-                {
-                    _log.Error("Error in writing thread", eng);
-                }
-            }
         }
 
 

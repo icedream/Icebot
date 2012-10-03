@@ -18,6 +18,13 @@ namespace Icebot
                 );
         }
 
+        /*
+        private void Quit(string reason = "Quitting")
+        {
+            SendCommand("quit", reason);
+        }
+         */
+
         public void Pass(string password)
         {
             // TODO: Implement handling for ERR_ALREADYREGISTERED
