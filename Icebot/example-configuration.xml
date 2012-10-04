@@ -10,7 +10,7 @@
       http://logging.apache.org/log4net/release/config-examples.html
       http://logging.apache.org/log4net/release/manual/configuration.html
   -->
-  <logging>
+  <log4net>
     <root>
       <level value="DEBUG" />
       <appender-ref ref="LogFile" />
@@ -52,7 +52,7 @@
           value="[%date] [%logger] %-5level: %message%newline" />
       </layout>
     </appender>
-  </logging>
+  </log4net>
 
   <!--
     Server configuration
@@ -80,9 +80,9 @@
         Not working yet.
       -->
       <altnicks>
-        <nick>Dreambot</nick>
-        <nick>Iceb0t</nick>
-        <nick>Bot%rand%</nick>
+        <nickname>Dreambot</nickname>
+        <nickname>Iceb0t</nickname>
+        <nickname>Bot%rand%</nickname>
       </altnicks>
       
       <!--
@@ -110,7 +110,7 @@
         Notice: This is NOT the NickServ password. If you want to authenticate
         via NickServ, use the NickServ plugin instead.
       -->
-      <!--<pass>donthackme</pass>-->
+      <!--<password>donthackme</password>-->
       
       <!--
         Invisible mode (part of usermode)
@@ -143,7 +143,7 @@
       
         Channels in which Icebot joins (comma-seperated)
       -->
-      <channel>#icebot,#testbot</channel>      
+      <channels>#icebot,#testbot</channels>      
     </server>
     
     <!--
