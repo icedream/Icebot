@@ -33,7 +33,7 @@ namespace Icebot
         StreamReader _reader;
         StreamWriter _writer;
 
-        ILog _log;
+        ILog _log = LogManager.GetLogger(typeof(Bot));
 
         public event EventHandler<IrcResponseEventArgs> ResponseReceived;
         protected void OnResponseReceived(IrcResponse resp)
@@ -55,6 +55,8 @@ namespace Icebot
             IrcResponseEventArgs e = new IrcResponseEventArgs(resp);
             if (StandardReplyReceived != null)
                 StandardReplyReceived.Invoke(this, e);
+            if (resp.Source.Equals("PING", StringComparison.OrdinalIgnoreCase))
+                Pong(resp);
         }
         public event EventHandler<RawLineEventArgs> RawLineReceived;
         protected void OnRawLineReceived(string line)
@@ -75,7 +77,7 @@ namespace Icebot
 
         public Bot(IPEndPoint server)
         {
-            _scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            _scheduler = TaskScheduler.Default;
             _taskfactory = new TaskFactory(_scheduler);
 
             // Fill with empty stacks for the message queueing (actually "stacking")
@@ -132,21 +134,19 @@ namespace Icebot
         private void _lineHandler(string line)
         {
             // Generally, raw line received (even if it is not valid)
-            if (RawLineReceived != null)
-                RawLineReceived.Invoke(this, new RawLineEventArgs(line));
+            OnRawLineReceived(line);
 
             // Parse the response
             var response = IrcResponse.FromRawLine(line);
 
             // Generally, response received
-            if (ResponseReceived != null)
-                ResponseReceived.Invoke(this, new IrcResponseEventArgs(response));
+            OnResponseReceived(response);
 
             // Specifically, response received
-            if (response.IsNumericReply && NumericReplyReceived != null)
-                NumericReplyReceived.Invoke(this, new IrcResponseEventArgs(response));
+            if (response.IsNumericReply)
+                OnNumericReplyReceived(response);
             else if (StandardReplyReceived != null)
-                StandardReplyReceived.Invoke(this, new IrcResponseEventArgs(response));
+                OnStandardReplyReceived(response);
         }
 
 
@@ -176,8 +176,7 @@ namespace Icebot
             _messageQueue[priority].Push(line);
             _asyncQueueLock.Set();
 
-            if (RawLineQueued != null)
-                RawLineQueued.Invoke(this, new RawLineEventArgs(line));
+            OnRawLineQueued(line);
         }
     }
 }
