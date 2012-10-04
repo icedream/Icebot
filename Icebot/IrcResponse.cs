@@ -27,7 +27,7 @@ namespace Icebot
         { get; set; }
 
         public bool IsNumericReply
-        { get { return NumericReply == IrcReplyCode.NonNumeric; } }
+        { get { return NumericReply != IrcReplyCode.NonNumeric; } }
 
         public IrcReplyCode NumericReply
         { get { ushort code = 0; ushort.TryParse(Command, out code); return (IrcReplyCode)code; } }
@@ -37,7 +37,7 @@ namespace Icebot
 
         public static IrcResponse FromRawLine(string line)
         {
-            Match m = Regex.Match(line, "^[:]*(?<source>.+) (?<command>.+) (?<parameters>.+)$");
+            Match m = Regex.Match(line, @"^[:]*(?<source>[^\s]+) (?<command>[^\s]+) (?<parameters>.+)$");
             if (m == null)
                 throw new System.Net.ProtocolViolationException(string.Format("IRC response line not protocol-conform: {0}", line));
 
@@ -49,10 +49,12 @@ namespace Icebot
             var paramsplit = new Queue<string>(m.Groups["parameters"].Value.Split(' '));
             var paramlist = new List<string>();
             // All arguments without leading ":" are to be parsed seperately
-            while (!paramsplit.Peek().StartsWith(":"))
+            while (paramsplit.Count > 0 && !paramsplit.Peek().StartsWith(":"))
                 paramlist.Add(paramsplit.Dequeue());
             // Last argument
-            paramlist.Add(string.Join(" ", paramsplit.ToArray<string>()).Substring(1));
+            if(paramsplit.Count > 0 )
+                paramlist.Add(string.Join(" ", paramsplit.ToArray<string>()).Substring(1));
+            resp.Parameters = paramlist.ToArray<string>();
             paramsplit.Clear();
             paramsplit = null;
 

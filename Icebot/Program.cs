@@ -11,7 +11,7 @@ namespace Icebot
 {
     class Program
     {
-        static ILog _log = LogManager.GetLogger(typeof(Program));
+        public static ILog _log = LogManager.GetLogger(typeof(Program));
         static List<Bot> _bots = new List<Bot>();
 
         static void Usage()
@@ -35,13 +35,13 @@ namespace Icebot
 
         static int Main(string[] args)
         {
-            Stack<string> arguments = args.AsEnumerable() as Stack<string>;
+            Queue<string> arguments = new Queue<string>(args);
 
             // Load configuration from stdin
             string xml = null;
             while(arguments.Count > 0)
             {
-                string name = arguments.Pop().ToLower();
+                string name = arguments.Dequeue().ToLower();
                 switch(name)
                 {
                     case "--config-file":
@@ -52,7 +52,7 @@ namespace Icebot
                             return -1;
                         }
                         try {
-                        xml = System.IO.File.ReadAllText(arguments.Pop());
+                        xml = System.IO.File.ReadAllText(arguments.Dequeue());
                         } catch (System.Security.SecurityException err) {
                             Console.Error.WriteLine("Config file can't be opened under these security circumstances.");
 #if DEBUG
@@ -91,12 +91,15 @@ namespace Icebot
             }
 
             if(string.IsNullOrEmpty(xml))
-                Console.In.ReadToEnd();
+                xml = Console.In.ReadToEnd();
 
             XmlDocument doc = new XmlDocument();
-            try {
-            doc.LoadXml(xml);
-            } catch(XmlException err) {
+            try
+            {
+                doc.LoadXml(xml);
+            }
+            catch (XmlException err)
+            {
                 Console.Error.WriteLine("The configuration has an error:");
                 Console.Error.WriteLine("\t" + err.Message);
                 Console.Error.WriteLine("\tin line " + err.LineNumber + ", position " + err.LinePosition);
@@ -109,9 +112,23 @@ namespace Icebot
 #endif
                 return -2;
             }
+            catch (Exception err)
+            {
+                Console.Error.WriteLine("The configuration has an error:");
+                Console.Error.WriteLine("\t" + err.Message);
+                Console.Error.WriteLine("\tThere are no details about the position of this error in the configuration.");
+#if DEBUG
+                Console.Error.WriteLine();
+                Console.Error.WriteLine("Stacktrace:");
+                Console.Error.WriteLine(err.StackTrace);
+                Console.Error.WriteLine();
+                Console.Error.WriteLine("Inner exception: " + err.InnerException.Message);
+#endif
+                return -2;
+            }
 
             // Load log4net configuration
-            XmlConfigurator.Configure((XmlElement)doc.SelectSingleNode("//icebot/logging"));
+            XmlConfigurator.Configure((XmlElement)doc.SelectSingleNode("//icebot/log4net"));
 
             var servers = doc.SelectSingleNode("//icebot/servers");
             foreach (var server in servers.ChildNodes.OfType<XmlNode>())
@@ -133,16 +150,18 @@ namespace Icebot
                             bot = new Bot(new System.Net.IPEndPoint(ip, port));
                             bot.StandardReplyReceived += new EventHandler<IrcResponseEventArgs>(bot_StandardReplyReceived);
                             bot.NumericReplyReceived += new EventHandler<IrcResponseEventArgs>(bot_NumericReplyReceived);
+                            bot.RawLineQueued += new EventHandler<RawLineEventArgs>(bot_RawLineQueued);
+                            bot.RawLineSent += new EventHandler<RawLineEventArgs>(bot_RawLineSent);
                             bot.Start(
-                                nick: server.SelectSingleNode("child::nick") != null ? server.SelectSingleNode("child::nick").Value : "Icebot",
-                                ident: server.SelectSingleNode("child::ident") != null ? server.SelectSingleNode("child::ident").Value : "icebot",
-                                realname: server.SelectSingleNode("child::realname") != null ? server.SelectSingleNode("child::realname").Value : "Icebot IRC Bot",
-                                password: server.SelectSingleNode("child::password") != null ? server.SelectSingleNode("child::password").Value : null,
+                                nick: server.SelectSingleNode("child::nickname") != null ? server.SelectSingleNode("child::nickname").InnerText : "Icebot",
+                                ident: server.SelectSingleNode("child::ident") != null ? server.SelectSingleNode("child::ident").InnerText : "icebot",
+                                realname: server.SelectSingleNode("child::realname") != null ? server.SelectSingleNode("child::realname").InnerText : "Icebot IRC Bot",
+                                password: server.SelectSingleNode("child::password") != null ? server.SelectSingleNode("child::password").InnerText : null,
 
                                 invisible: server.SelectSingleNode("child::invisible") != null,
                                 receiveWallops: server.SelectSingleNode("child::receive-wallops") != null
                             );
-                            bot.Join(server.SelectSingleNode("child::channels").Value.Split(','));
+                            bot.Join(server.SelectSingleNode("child::channels").InnerText.Split(','));
                             break;
                         }
                         catch(Exception err)
@@ -162,7 +181,19 @@ namespace Icebot
                 }
             }
 
+            System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
+
             return 0;
+        }
+
+        static void bot_RawLineSent(object sender, RawLineEventArgs e)
+        {
+            _log.Debug("Direct SEND: " + e.RawLine);
+        }
+
+        static void bot_RawLineQueued(object sender, RawLineEventArgs e)
+        {
+            _log.Debug("Queued SEND: " + e.RawLine);
         }
 
         static void bot_NumericReplyReceived(object sender, IrcResponseEventArgs e)

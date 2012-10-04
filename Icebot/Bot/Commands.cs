@@ -87,9 +87,9 @@ namespace Icebot
             SendCommand("pong", data);
         }
 
-        private void Pong(IrcCommand data)
+        private void Pong(IrcResponse data)
         {
-            SendCommand("pong", data.Parameters[0]);
+            SendCommand("pong", data.Command);
         }
     }
 }
