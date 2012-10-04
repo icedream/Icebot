@@ -62,8 +62,9 @@ namespace Icebot
                     try
                     {
                         // Wait for the queue to be filled
-                        _asyncQueueLock.Wait(); // Needs less cpu then Thread.Sleep. Just a bit. At least that. ._.
-                        _asyncQueueLock.Reset();
+                        //_asyncQueueLock.Wait(); // Needs less cpu then Thread.Sleep. Just a bit. At least that. ._.
+                        while ((from m in _messageQueue select m.Count).Sum() == 0)
+                            _asyncWritingLock.Wait();
                         lock (_asyncQueueLock)
                         {
                             // Wait for the async event to be set
@@ -74,21 +75,21 @@ namespace Icebot
                             // This should emulate the anti-flood of the ZNC bouncer
                             lock (_asyncWritingLock)
                             {
-                                for (int i = _messageQueue.Length - 1; i > 0; i--)
+                                for (int i = _messageQueue.Length - 1; i >= 0; i--)
                                     while (_messageQueue[i].Count > 0)
                                     {
                                         string line = _messageQueue[i].Pop();
                                         // TODO: Count timing of the event invocation and subtract it from total wait time
                                         _writer.WriteLine(line);
                                         _writer.Flush();
-                                        if (RawLineSent != null)
-                                            RawLineSent.Invoke(this, new RawLineEventArgs(line));
+                                        OnRawLineSent(line);
                                         if (msg == QueueIntervalAfterMessages)
                                             Thread.Sleep(this.QueueInterval);
                                         else
                                             msg++;
                                     }
                             }
+                            _asyncQueueLock.Reset();
                         }
                     }
                     catch (Exception eng)
