@@ -36,8 +36,15 @@ namespace Icebot
 
         public override string ToString()
         {
-            var pa = string.Join(" ", from p in Parameters select (p.Contains(" ") ? ":" : "") + p);
-            return string.Format("{0} {1}", Command.ToUpper(), pa);
+            if (Parameters != null && Parameters.Count() > 0)
+            {
+                var n = from p in Parameters select p != null ? (p.Contains(" ") ? ":" : "") + p : "";
+                var pa = string.Join(" ", n);
+                string line = string.Format("{0} {1}", Command.ToUpper(), pa);
+                return line;
+            }
+            else
+                return Command.ToUpper();
         }
     }
 }
