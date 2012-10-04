@@ -1,0 +1,56 @@
+﻿      <!--
+        Plugins (still to be implemented, thus not working)
+        
+        This is just here for documentation/keeping track of what is still to do.
+        The plugins management will be moved to a database which makes loading
+        settings and similar stuff much faster and does not use up the harddisk
+        that much (hopefully).
+        And it saves me time from coding even.
+      -->
+      <plugins>
+        
+        <!--
+          NickServ plugin
+          
+          Allows you to authenticate to the services on the server via NickServ
+        -->
+        <plugin name="NickServ">
+          <identification>nickservpasswordhere</identification>
+          <!--<identification>nickservuser nickservpasswordhere</identification>-->
+        </plugin>
+        
+        <!--
+          Anti-Spam plugin
+          
+          Kicks/Tempbans/Bans people flooding/spamming either the channel or the bot
+        -->
+        <plugin name="AntiSpam">
+          <!--
+            Values are: points, linecount
+          -->
+          <system>points</system>
+          
+          <!--
+            If using points, indicates whether the points are going down linear (not set)
+            and don't just stay temporarily (set)
+          -->
+          <!--<hold-points />-->
+          
+          <!--
+            Indicates how long the lines a user wrote are being counted into the anti-spam
+            algorithm. (in seconds)
+          -->
+          <validity>60</validity>
+          
+          <!--
+            Sets the limits when a user gets kicked/tempbanned/banned. To turn off a limit,
+            just don't set it.
+            
+            All values are given in points (points system) or in line counts (linecount system).
+          -->
+          <kick>80</kick>
+          <tempban>160</tempban>
+          <ban>200</ban>
+        </plugin>
+        
+      </plugins>

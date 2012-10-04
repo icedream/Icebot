@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<icebot>
+  <!--
+    Log configuration
+  
+    This is the log4net configuration. It completely follows the rules of the
+    standard log4net XML parsing.
+
+    For more info on how to configure log4net to your needs, check out:
+      http://logging.apache.org/log4net/release/config-examples.html
+      http://logging.apache.org/log4net/release/manual/configuration.html
+  -->
+  <logging>
+    <root>
+      <level value="DEBUG" />
+      <appender-ref ref="LogFile" />
+      <appender-ref ref="Console" />
+    </root>
+    
+    <appender name="LogFile" type="log4net.Appender.RollingFileAppender" >
+      <file value="Icebot.log" />
+      <appendToFile value="false" />
+      <rollingStyle value="Size" />
+      <maxSizeRollBackups value="10" />
+      <maximumFileSize value="500KB" />
+      <staticLogFileName value="true" />
+      <layout type="log4net.Layout.PatternLayout">
+        <conversionPattern
+          value="[%date] [%logger @ %thread] %-5level: %message%newline" />
+      </layout>
+    </appender>
+    
+    <appender name="Console" type="log4net.Appender.ColoredConsoleAppender">
+      <mapping>
+        <level value="ERROR" />
+        <foreColor value="Red, HighIntensity" />
+      </mapping>
+      <mapping>
+        <level value="WARN" />
+        <foreColor value="Yellow, HighIntensity" />
+      </mapping>
+      <mapping>
+        <level value="INFO" />
+        <foreColor value="White, HighIntensity" />
+      </mapping>
+      <mapping>
+        <level value="DEBUG" />
+        <foreColor value="White" />
+      </mapping>
+      <layout type="log4net.Layout.PatternLayout">
+        <conversionPattern
+          value="[%date] [%logger] %-5level: %message%newline" />
+      </layout>
+    </appender>
+  </logging>
+
+  <!--
+    Server configuration
+    
+    Configures the servers on which Icebot should join.
+  -->
+  <servers>
+    <server host="ircserv.er" port="6667">      
+      <!--
+        Nickname
+        
+        The initial nickname under which Icebot connects
+      -->
+      <nickname>Icebot</nickname>
+      
+      <!--
+        Alternative Nicks
+        
+        The other nicknames Icebot should try to use if the first can't be
+        used.
+        The last nickname will be repeatedly retried, so using %rand% to
+        generate a random number prefixed to the nick would be a good idea
+        to prevent spamming the server with NICK commands in the worst case.
+        
+        Not working yet.
+      -->
+      <altnicks>
+        <nick>Dreambot</nick>
+        <nick>Iceb0t</nick>
+        <nick>Bot%rand%</nick>
+      </altnicks>
+      
+      <!--
+        Ident/Username
+        
+        The ident under which Icebot connects.
+        
+        This will have a ~ prefixed on most IRC servers because there will
+        be no Ident Daemon verifying your ident.
+      -->
+      <ident>icebot</ident>
+      
+      <!--
+        Real name
+        
+        The name which Icebot uses as a real name in WHOIS requests.
+      -->
+      <realname>Icebot IRC Bot</realname>
+      
+      <!--
+        Server Password
+      
+        Uncomment this to use a server password to connect.
+        
+        Notice: This is NOT the NickServ password. If you want to authenticate
+        via NickServ, use the NickServ plugin instead.
+      -->
+      <!--<pass>donthackme</pass>-->
+      
+      <!--
+        Invisible mode (part of usermode)
+      
+        Sets if the bot should tell the server to make the bot invisible
+        initially.
+      -->
+      <!--<invisible />-->
+      
+      <!--
+        Receive wallops (part of usermode)
+        
+        Sets if the bot should tell the server to send wallops to itself.
+      -->
+      <!--<receive-wallops />-->
+      
+      <!--
+        Built-in features
+        
+        Usually all things should be on, but if you have problems with
+        some plugins (or even code modifications), try disabling them
+        here.
+      -->
+      <!--<no-antiflood />-->
+      <!--<no-autopingreply />-->
+      <!--<no-ipv6 />-->
+      
+      <!--
+        Initial channels
+      
+        Channels in which Icebot joins (comma-seperated)
+      -->
+      <channel>#icebot,#testbot</channel>      
+    </server>
+    
+    <!--
+    <server host="another.irc.server.com" port="6667">
+      ...
+    </server>
+    -->
+  </servers>
+</icebot>
