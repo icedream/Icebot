@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ ! -d "log4net/src" ]; then
+	git submodule init
+	git submodule update
+fi
+
+if [ -f "log4net/src/Layout/XMLLayout.cs" ]; then mv log4net/src/Layout/XMLLayout.cs log4net/src/Layout/XmlLayout.cs; fi
+if [ -f "log4net/src/Layout/XMLLayoutBase.cs" ]; then mv log4net/src/Layout/XMLLayoutBase.cs log4net/src/Layout/XmlLayoutBase.cs; fi
+
+echo "Fixes have been applied."
