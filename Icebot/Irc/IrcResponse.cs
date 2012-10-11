@@ -4,60 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Icebot
+namespace Icebot.Irc
 {
     /// <summary>
     /// Represents a response from an IRC server.
     /// </summary>
-    public class IrcResponse
+    public class IrcStandardReply
     {
         public Bot Bot
         { get; set; }
 
-        public string Raw
+        public IrcStandardReply Message
         { get; set; }
+    }
 
-        public string Source
-        { get; set; }
+    /// <summary>
+    /// Represents a numeric response from an IRC server.
+    /// </summary>
+    public class IrcNumericReply : IrcStandardReply
+    {
+        public bool IsValid
+        { get { return Reply != IrcReplyCode.NonNumeric; } }
 
-        public string Command
-        { get; set; }
-
-        public bool IsNumericReply
-        { get { return NumericReply != IrcReplyCode.NonNumeric; } }
-
-        public IrcReplyCode NumericReply
+        public IrcReplyCode Reply
         { get { ushort code = 0; ushort.TryParse(Command, out code); return (IrcReplyCode)code; } }
-
-        public string[] Parameters
-        { get; set; }
-
-        public static IrcResponse FromRawLine(Bot bot, string line)
-        {
-            Match m = Regex.Match(line, @"^[:]*(?<source>[^\s]+) (?<command>[^\s]+) (?<parameters>.+)$");
-            if (m == null)
-                throw new System.Net.ProtocolViolationException(string.Format("IRC response line not protocol-conform: {0}", line));
-
-            var resp = new IrcResponse();
-            resp.Raw = line;
-            resp.Source = m.Groups["source"].Value;
-            resp.Command = m.Groups["command"].Value;
-            resp.Bot = bot;
-            
-            // Parse arguments
-            var paramsplit = new Queue<string>(m.Groups["parameters"].Value.Split(' '));
-            var paramlist = new List<string>();
-            // All arguments without leading ":" are to be parsed seperately
-            while (paramsplit.Count > 0 && !paramsplit.Peek().StartsWith(":"))
-                paramlist.Add(paramsplit.Dequeue());
-            // Last argument
-            if(paramsplit.Count > 0 )
-                paramlist.Add(string.Join(" ", paramsplit.ToArray<string>()).Substring(1));
-            resp.Parameters = paramlist.ToArray<string>();
-            paramsplit.Clear();
-            paramsplit = null;
-
-            return resp;
-        }
     }
 }
