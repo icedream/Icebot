@@ -62,9 +62,12 @@ namespace Icebot
                     try
                     {
                         // Wait for the queue to be filled
-                        //_asyncQueueLock.Wait(); // Needs less cpu then Thread.Sleep. Just a bit. At least that. ._.
                         while ((from m in _messageQueue select m.Count).Sum() == 0)
+                        {
                             _asyncWritingLock.Wait();
+                            Thread.Sleep(20);
+                        }
+
                         lock (_asyncQueueLock)
                         {
                             // Wait for the async event to be set
@@ -78,7 +81,7 @@ namespace Icebot
                                 for (int i = _messageQueue.Length - 1; i >= 0; i--)
                                     while (_messageQueue[i].Count > 0)
                                     {
-                                        string line = _messageQueue[i].Pop();
+                                        string line = _messageQueue[i].Dequeue();
                                         // TODO: Count timing of the event invocation and subtract it from total wait time
                                         _writer.WriteLine(line);
                                         _writer.Flush();

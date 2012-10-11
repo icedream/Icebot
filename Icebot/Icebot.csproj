@@ -45,15 +45,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
+    <Compile Include="BotCommand.cs" />
     <Compile Include="Bot\Async.cs" />
     <Compile Include="Bot\AutoPingReply.cs" />
     <Compile Include="Bot\Commands.cs" />
     <Compile Include="Bot\Queueing.cs" />
     <Compile Include="EventArgs.cs" />
+    <Compile Include="IrcMessage.cs" />
+    <Compile Include="IrcUser.cs" />
+    <Compile Include="Irc\RawMessage.cs" />
+    <Compile Include="MessageType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IrcCommand.cs" />
-    <Compile Include="IrcResponse.cs" />
+    <Compile Include="Irc\IrcResponse.cs" />
     <Compile Include="IrcReplyCode.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -33,6 +33,8 @@ namespace Icebot
         StreamReader _reader;
         StreamWriter _writer;
 
+        ManualResetEventSlim _registeredLock = new ManualResetEventSlim(false);
+
         ILog _log = LogManager.GetLogger(typeof(Bot));
 
         public event EventHandler<IrcResponseEventArgs> ResponseReceived;
@@ -48,6 +50,12 @@ namespace Icebot
             IrcResponseEventArgs e = new IrcResponseEventArgs(resp);
             if (NumericReplyReceived != null)
                 NumericReplyReceived.Invoke(this, e);
+            switch (resp.NumericReply)
+            {
+                case IrcReplyCode.RPL_MYINFO:
+                    _registeredLock.Set();
+                    break;
+            }
         }
         public event EventHandler<IrcResponseEventArgs> StandardReplyReceived;
         protected void OnStandardReplyReceived(IrcResponse resp)
@@ -75,6 +83,9 @@ namespace Icebot
 
         public IPEndPoint Server { get; set; }
 
+        private string _prefix = "!";
+        public string Prefix { get { return _prefix; } set { _prefix = value; } }
+
         public Bot(IPEndPoint server)
         {
             _scheduler = TaskScheduler.Default;
@@ -82,7 +93,7 @@ namespace Icebot
 
             // Fill with empty stacks for the message queueing (actually "stacking")
             for (int i = 0; i < _messageQueue.Length; i++)
-                _messageQueue[i] = new Stack<string>();
+                _messageQueue[i] = new Queue<string>();
 
             this.Server = server;
         }
@@ -90,24 +101,30 @@ namespace Icebot
         public void Start(string nick = "IRCBot", string ident = "bot", string realname = "IRC Bot", string password = null, bool invisible = false, bool receiveWallops = false)
         {
             Connect();
+            Thread.Sleep(500);
 
             // Send password
             if(!string.IsNullOrEmpty(password))
                 Pass(password);
 
-            // Send user data
-            User(ident, receiveWallops, invisible, realname);
-
             // Send initial nick (or at least try getting that nick)
             Nick(nick);
+
+            // Send user data
+            User(ident, receiveWallops, invisible, realname);
 
             // Asynchronous reading/writing startup
             _taskfactory.StartNew(() => _asyncReadingProcedure(), _asyncCancel.Token);
             _taskfactory.StartNew(() => _asyncWritingProcedure(), _asyncCancel.Token);
+
+            // Wait for being registered
+            // TODO: Alternative nicks and other error handling for login
+            _registeredLock.Wait();
         }
 
         internal void Connect()
         {
+            _registeredLock.Reset();
             // TODO: Implement SSL support
             // TODO: Implement error handling for connection errors
             _socket = new Socket(Server.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
@@ -173,7 +190,7 @@ namespace Icebot
             if (priority < 0 || priority >= _messageQueue.Length)
                 throw new ArgumentOutOfRangeException("priority", priority, string.Format("Must be between 0 and {0}", _messageQueue.Length - 1));
             
-            _messageQueue[priority].Push(line);
+            _messageQueue[priority].Enqueue(line);
             _asyncQueueLock.Set();
 
             OnRawLineQueued(line);

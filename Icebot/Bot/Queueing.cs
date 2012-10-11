@@ -9,7 +9,7 @@ namespace Icebot
 {
     public partial class Bot
     {
-        Stack<string>[] _messageQueue = new Stack<string>[3];
+        Queue<string>[] _messageQueue = new Queue<string>[3];
 
         ManualResetEventSlim _asyncQueueLock = new ManualResetEventSlim(false);
 

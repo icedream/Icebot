@@ -198,12 +198,12 @@ namespace Icebot
 
         static void bot_NumericReplyReceived(object sender, IrcResponseEventArgs e)
         {
-            _log.Debug("Numeric reply: " + e.Response.NumericReply.ToString() + " with " + e.Response.Parameters.Length + " arguments");
+            _log.Debug("Numeric reply: " + e.Response.Raw);
         }
 
         static void bot_StandardReplyReceived(object sender, IrcResponseEventArgs e)
         {
-            _log.Debug("Standard reply: " + e.Response.Command + " with " + e.Response.Parameters.Length + " arguments");
+            _log.Debug("Standard reply: " + e.Response.Raw);
         }
     }
 }

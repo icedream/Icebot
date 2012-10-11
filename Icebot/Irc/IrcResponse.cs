@@ -11,17 +11,14 @@ namespace Icebot
     /// </summary>
     public class IrcResponse
     {
-        public string Source
+        public Bot Bot
         { get; set; }
 
-        public string SourceNick
-        { get { return Source.Split('!', '@')[0]; } }
+        public string Raw
+        { get; set; }
 
-        public string SourceIdent
-        { get { return Source.Split('!', '@')[1]; } }
-
-        public string SourceHost
-        { get { return Source.Split('!', '@')[2]; } }
+        public string Source
+        { get; set; }
 
         public string Command
         { get; set; }
@@ -35,15 +32,17 @@ namespace Icebot
         public string[] Parameters
         { get; set; }
 
-        public static IrcResponse FromRawLine(string line)
+        public static IrcResponse FromRawLine(Bot bot, string line)
         {
             Match m = Regex.Match(line, @"^[:]*(?<source>[^\s]+) (?<command>[^\s]+) (?<parameters>.+)$");
             if (m == null)
                 throw new System.Net.ProtocolViolationException(string.Format("IRC response line not protocol-conform: {0}", line));
 
             var resp = new IrcResponse();
+            resp.Raw = line;
             resp.Source = m.Groups["source"].Value;
             resp.Command = m.Groups["command"].Value;
+            resp.Bot = bot;
             
             // Parse arguments
             var paramsplit = new Queue<string>(m.Groups["parameters"].Value.Split(' '));
