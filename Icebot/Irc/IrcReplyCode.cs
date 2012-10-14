@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Icebot
+namespace Icebot.Irc
 {
     /// <summary>
     /// Reply codes as defined in RFC 2812

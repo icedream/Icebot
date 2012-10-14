@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Icebot.Irc
 {
-    public class RawLine
+    public class IrcRawLine
     {
         public string Command { get; set; }
         public string[] Parameters { get; set; }
@@ -23,22 +23,22 @@ namespace Icebot.Irc
                 return Command.ToUpper();
         }
 
-        internal RawLine()
+        internal IrcRawLine()
         {
         }
-        public RawLine(string command)
+        public IrcRawLine(string command)
         {
             this.Command = command;
             this.Parameters = new string[0];
         }
-        public RawLine(string command, params string[] parameters)
+        public IrcRawLine(string command, params string[] parameters)
         {
             this.Command = command;
             this.Parameters = parameters;
         }
     }
 
-    public class IrcStandardReply : RawLine
+    public class IrcStandardReply : IrcRawLine
     {
         public string Source { get; set; }
         public Bot Bot { get; set; }

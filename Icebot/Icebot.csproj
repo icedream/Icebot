@@ -48,20 +48,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
-    <Compile Include="BotCommand.cs" />
+    <Compile Include="Bot\BotCommand.cs" />
     <Compile Include="Bot\Async.cs" />
     <Compile Include="Bot\AutoPingReply.cs" />
     <Compile Include="Bot\Commands.cs" />
     <Compile Include="Bot\Queueing.cs" />
     <Compile Include="EventArgs.cs" />
-    <Compile Include="IrcMessage.cs" />
-    <Compile Include="IrcUser.cs" />
-    <Compile Include="Irc\RawLine.cs" />
-    <Compile Include="MessageType.cs" />
+    <Compile Include="Irc\EventArgs.cs" />
+    <Compile Include="Irc\IrcMessage.cs" />
+    <Compile Include="Irc\IrcSource.cs" />
+    <Compile Include="Irc\IrcRawLine.cs" />
+    <Compile Include="Irc\IrcMessageType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IrcCommand.cs" />
-    <Compile Include="Irc\IrcResponse.cs" />
-    <Compile Include="IrcReplyCode.cs" />
+    <Compile Include="Irc\IrcReply.cs" />
+    <Compile Include="Irc\IrcReplyCode.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\log4net\src\log4net.vs2010.csproj">
