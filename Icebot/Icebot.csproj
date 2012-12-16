@@ -47,6 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\Attributes.cs" />
+    <Compile Include="Api\BasePlugin.cs" />
+    <Compile Include="Api\CommandType.cs" />
+    <Compile Include="Api\InstanceType.cs" />
+    <Compile Include="Api\Limits.cs" />
     <Compile Include="Bot.cs" />
     <Compile Include="Bot\BotCommand.cs" />
     <Compile Include="Bot\Async.cs" />
@@ -59,24 +64,25 @@
     <Compile Include="Irc\IrcSource.cs" />
     <Compile Include="Irc\IrcRawLine.cs" />
     <Compile Include="Irc\IrcMessageType.cs" />
+    <Compile Include="Irc\IrcTarget.cs" />
+    <Compile Include="Plugins\Example.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Irc\IrcReply.cs" />
     <Compile Include="Irc\IrcReplyCode.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\log4net\src\log4net.vs2010.csproj">
-      <Project>{181FE707-E161-4722-9F38-6AAAB6FAA106}</Project>
-      <Name>log4net.vs2010</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Concepts\Plugins.txt" />
     <Content Include="example-configuration.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libraries\log4net\src\log4net.vs2010.csproj">
+      <Project>{181FE707-E161-4722-9F38-6AAAB6FAA106}</Project>
+      <Name>log4net.vs2010</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
