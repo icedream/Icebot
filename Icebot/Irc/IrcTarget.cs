@@ -7,7 +7,7 @@ namespace Icebot.Irc
 {
     public class IrcTarget
     {
-        public IrcServer Server { get; set; }
+        public IrcServerConnection Server { get; set; }
 
         public string Name { get; set; }
     }
