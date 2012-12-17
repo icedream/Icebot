@@ -27,7 +27,7 @@ namespace Icebot.Plugins
 
     // Indicates that the bot has to make a single instance for every
     // channel the plugin is requested to work in.
-    [ChannelPlugin]
+    [ChannelInstancePlugin]
 
     // Indicates that the bot has to share a single instance with every
     // channel of a server the plugin is requested to work in.
@@ -42,11 +42,9 @@ namespace Icebot.Plugins
      * For this you can use the PluginMetadata attribute. It is not a
      * required attribute, but it's good to have a well-documented plugin!
      */
-    [PluginMetadata(
-        Title="Greetings", // Give the plugin a title.
-        Description="Makes the bot greet people automatically on join", // Describe the plugin a bit here.
-        Author="Carl Kittelberger" // who actually wrote it? Can be just "[nickname/real name]" or "[nickname/realname] <[email here]>".
-    )]
+    [PluginTitle("Greetings")] // Give the plugin a title.
+    [PluginDescription("Makes the bot greet people automatically on join")] // Describe the plugin a bit here.
+    [PluginAuthor("Carl Kittelberger")] // who actually wrote it? Can be just "[nickname/real name]" or "[nickname/realname] <[email here]>".
 
     /*
      * Now off to the actual code. Create a derivated class from
@@ -116,7 +114,7 @@ namespace Icebot.Plugins
             IrcSource source,
 
             // The actual arguments of the command call are stored here
-            [PluginCommandParameter("The arguments")] // will later show up in the help as a description for the "arguments" parameter
+            [PluginCommandParameterDescription("The arguments")] // will later show up in the help as a description for the "arguments" parameter
             params string[] arguments
         )
         {
@@ -128,18 +126,18 @@ namespace Icebot.Plugins
         /*
          * This command is private.
          */
-        [PluginCommand("testadd",
-            Type = CommandType.Private,
-            ShortDescription = "Calculates the addition of two numbers.",
-            LongDescription = "Calculates the result of A + B and outputs it via a notice. This is also called the 'addition' of two numbers A and B."
+        [PluginCommand("testadd", CommandType.Private)]
+        [PluginCommandDescription(
+            "Calculates the addition of two numbers.",
+            "Calculates the result of A + B and outputs it via a notice. This is also called the 'addition' of two numbers A and B."
         )]
         public void Private_TestAddition(
             IrcSource source,
 
-            [PluginCommandParameter("First number of addition")]
+            [PluginCommandParameterDescription("First number of addition")]
             int A,
 
-            [PluginCommandParameter("Second number of addition")]
+            [PluginCommandParameterDescription("Second number of addition")]
             int B
         )
         {
