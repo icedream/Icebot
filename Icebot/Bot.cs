@@ -172,15 +172,15 @@ namespace Icebot
 
         public void SendCommand(string command)
         {
-            SendCommand(new IrcCommand(command));
+            SendCommand(new IrcMessage(command));
         }
 
         public void SendCommand(string command, params string[] parameters)
         {
-            SendCommand(new IrcCommand(command, parameters));
+            SendCommand(new IrcMessage(command, parameters));
         }
 
-        public void SendCommand(IrcCommand command)
+        public void SendCommand(IrcMessage command)
         {
             Raw(command.ToString());
         }
