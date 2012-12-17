@@ -93,7 +93,7 @@ namespace Icebot.Plugins
          * just define no custom arguments. Would make it a parameter-less command.
          */
         [PluginCommand("test")]
-        public void Public_Test(IrcChannel channel, IrcSource user)
+        public void Public_Test(IrcChannel channel, IrcUser user)
         {
             user.Notice("Test in " + channel.Name + " succeeded!");
         }
@@ -111,7 +111,7 @@ namespace Icebot.Plugins
 
             // The sources given by the bot itself
             IrcChannel channel,
-            IrcSource source,
+            IrcUser source,
 
             // The actual arguments of the command call are stored here
             [PluginCommandParameterDescription("The arguments")] // will later show up in the help as a description for the "arguments" parameter
@@ -132,7 +132,7 @@ namespace Icebot.Plugins
             "Calculates the result of A + B and outputs it via a notice. This is also called the 'addition' of two numbers A and B."
         )]
         public void Private_TestAddition(
-            IrcSource source,
+            IrcUser source,
 
             [PluginCommandParameterDescription("First number of addition")]
             int A,
