@@ -5,9 +5,21 @@ using System.Text;
 
 namespace Icebot
 {
-    public class IrcSource
+    public class IrcUser
     {
-        public IrcServer Server { get; set; }
+        public override bool Equals(object obj)
+        {
+            if (!(obj is IrcUser))
+                return false;
+
+            return
+                Nick.Equals(((IrcUser)obj).Nick, StringComparison.OrdinalIgnoreCase)
+                && Ident.Equals(((IrcUser)obj).Ident)
+                && Host.Equals(((IrcUser)obj).Host, StringComparison.OrdinalIgnoreCase)
+                ;
+        }
+
+        public IrcServerConnection Server { get; set; }
 
         public string Hostmask { get; set; }
 
@@ -37,14 +49,23 @@ namespace Icebot
         }
     }
 
-    public class IrcChannelSource
+    public class IrcChannelUser
     {
-        public IrcSource SourceUser { get; set; }
+        public IrcUser SourceUser { get; set; }
         public IrcChannel SourceChannel { get; set; }
 
         public void Kick()
         {
             SourceChannel.Kick(SourceUser.Nick);
+        }
+
+        public void NoticeHighlight(string text)
+        {
+            SourceChannel.Notice(string.Format("{0}: {1}", SourceUser.Nick, text));
+        }
+        public void MessageHighlight(string text)
+        {
+            SourceChannel.Message(string.Format("{0}: {1}", SourceUser.Nick, text));
         }
 
         /*
