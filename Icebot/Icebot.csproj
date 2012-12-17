@@ -60,7 +60,9 @@
     <Compile Include="Bot\Queueing.cs" />
     <Compile Include="EventArgs.cs" />
     <Compile Include="Irc\EventArgs.cs" />
+    <Compile Include="Irc\IrcChannel.cs" />
     <Compile Include="Irc\IrcMessage.cs" />
+    <Compile Include="Irc\IrcServer.cs" />
     <Compile Include="Irc\IrcSource.cs" />
     <Compile Include="Irc\IrcRawLine.cs" />
     <Compile Include="Irc\IrcMessageType.cs" />
